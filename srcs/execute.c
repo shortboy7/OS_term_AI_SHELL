@@ -34,7 +34,7 @@ void executeCommand(char** arguments) {
             exit(EXIT_FAILURE);
         }
     }
-
+    printf("numCommands: %d\n", numCommands);
     for (i = 0; i < numCommands; i++) {
         pids[i] = fork();
 
@@ -47,46 +47,15 @@ void executeCommand(char** arguments) {
             // Redirect input
             if (i > 0) {
                 dup2(pipefd[i - 1][0], STDIN_FILENO);
-                close(pipefd[i - 1][0]);
-                close(pipefd[i - 1][1]);
+                // close(pipefd[i - 1][0]);
+                // close(pipefd[i - 1][1]);
             }
 
             // Redirect output
             if (i < numCommands - 1) {
                 dup2(pipefd[i][1], STDOUT_FILENO);
-                close(pipefd[i][0]);
-                close(pipefd[i][1]);
-            }
-
-            // Handle redirection symbols
-            if (strcmp(arguments[i], ">") == 0) {
-                // Output redirection
-                if (i + 1 < numCommands) {
-                    int outputFile = open(arguments[i + 1], O_WRONLY | O_CREAT | O_TRUNC, 0666);
-                    if (outputFile == -1) {
-                        perror("File open failed");
-                        exit(EXIT_FAILURE);
-                    }
-                    dup2(outputFile, STDOUT_FILENO);
-                    close(outputFile);
-                } else {
-                    fprintf(stderr, "Invalid command format\n");
-                    exit(EXIT_FAILURE);
-                }
-            } else if (strcmp(arguments[i], "<") == 0) {
-                // Input redirection
-                if (i + 1 < numCommands) {
-                    int inputFile = open(arguments[i + 1], O_RDONLY);
-                    if (inputFile == -1) {
-                        perror("File open failed");
-                        exit(EXIT_FAILURE);
-                    }
-                    dup2(inputFile, STDIN_FILENO);
-                    close(inputFile);
-                } else {
-                    fprintf(stderr, "Invalid command format\n");
-                    exit(EXIT_FAILURE);
-                }
+                // close(pipefd[i][0]);
+                // close(pipefd[i][1]);
             }
 
 
@@ -98,15 +67,54 @@ void executeCommand(char** arguments) {
             // if commandIdx[i + 1] == argumentIdx -> 마지막 argument까지
             // else commandIdx[i + 1] - 1 까지
             int bound = (commandIdx[i + 1] == argumentIdx) ? commandIdx[i + 1] : commandIdx[i + 1] - 1;
+            int redirectSymbolIdx = -1;
             for (int j = commandIdx[i]; j < bound; j++) {
                 if (strcmp(arguments[j], ">") == 0 || strcmp(arguments[j], "<") == 0) {
-					break;
+					redirectSymbolIdx = j;
+                    break;
                 } else {
                     commandArguments[argIndex] = arguments[j];
                     argIndex++;
                 }
             }
             commandArguments[argIndex] = NULL;
+
+            if (redirectSymbolIdx != - 1) {
+                for (int redx = redirectSymbolIdx; redx < bound; redx++) {
+                    // Handle redirection symbols
+                    if (strcmp(arguments[redx], ">") == 0) {
+                        // Output redirection
+                        if (redx + 1 < argumentIdx) {
+                            int outputFile = open(arguments[redx + 1], O_WRONLY | O_CREAT | O_TRUNC, 0666);
+                            if (outputFile == -1) {
+                                perror("File open failed");
+                                exit(EXIT_FAILURE);
+                            }
+                            dup2(outputFile, STDOUT_FILENO);
+                            close(outputFile);
+                            redx += 1;
+                        } else {
+                            fprintf(stderr, "Invalid command format\n");
+                            exit(EXIT_FAILURE);
+                        }
+                    } else if (strcmp(arguments[redx], "<") == 0) {
+                        // Input redirection
+                        if (redx + 1 < argumentIdx) {
+                            int inputFile = open(arguments[redx + 1], O_RDONLY);
+                            if (inputFile == -1) {
+                                perror("File open failed");
+                                exit(EXIT_FAILURE);
+                            }
+                            dup2(inputFile, STDIN_FILENO);
+                            close(inputFile);
+                            redx += 1;
+                        } else {
+                            fprintf(stderr, "Invalid command format\n");
+                            exit(EXIT_FAILURE);
+                        }
+                    }
+                }
+            }
 
             // Execute the command
             execvp(commands[i], commandArguments);
