@@ -1,5 +1,24 @@
 #include "mysh.h"
 
+void changeDirectory(char** arguments) {
+    if (arguments[1] == NULL) {
+        // No directory provided, go to home directory
+        const char* homeDir = getenv("HOME");
+        if (homeDir != NULL) {
+            if (chdir(homeDir) != 0) {
+                perror("chdir failed");
+            }
+        } else {
+            fprintf(stderr, "Home directory not found\n");
+        }
+    } else {
+        // Change to the specified directory
+        if (chdir(arguments[1]) != 0) {
+            perror("chdir failed");
+        }
+    }
+}
+
 void executeCommand(char** arguments) {
     int i;
     int numCommands = 1;
@@ -34,7 +53,6 @@ void executeCommand(char** arguments) {
             exit(EXIT_FAILURE);
         }
     }
-    printf("numCommands: %d\n", numCommands);
     for (i = 0; i < numCommands; i++) {
         pids[i] = fork();
 
@@ -44,11 +62,9 @@ void executeCommand(char** arguments) {
         } else if (pids[i] == 0) {
             // Child process
 
-            // 자식 : read fd0 <- 부모 : write fd1
             // Redirect input
             if (i > 0) {
-
-                dup2(pipefd[i - 1][0], STDIN_FILENO); // pipefd[i - 1][0](입력) 이 보고 있는 것을 STDIN_FILENO으로 복사
+                dup2(pipefd[i - 1][0], STDIN_FILENO);
                 close(pipefd[i - 1][0]);
                 close(pipefd[i - 1][1]);
             }

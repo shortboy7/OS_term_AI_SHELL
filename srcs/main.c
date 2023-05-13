@@ -1,21 +1,38 @@
 #include "mysh.h"
 
 int main() {
-     // Read the input command
-    char input[1000];
-    printf("Enter command: ");
-    fgets(input, sizeof(input), stdin);
+    Node *history = NULL;
+    while (1) {
+        // Read the input command
+        char input[1000];
+        char* arguments[MAX_ARGUMENTS];
+        printf("mysh$ ");
+        fgets(input, sizeof(input), stdin);
 
-    char* arguments[MAX_ARGUMENTS];
-    splitInput(input, arguments);
-    executeCommand(arguments);
-    int i;
-    for (i = 0; arguments[i] != NULL; i++) {
-        printf("%s\n", arguments[i]);
-        free(arguments[i]);
+        // Remove newline character from input
+        input[strcspn(input, "\n")] = '\0';
+        history = addToHistory(history, input);
+        splitInput(input, arguments);
+
+        // Execute builtin
+        if (strcmp(arguments[0], "cd") == 0) {
+            changeDirectory(arguments);
+            continue;
+        } else if (strcmp(arguments[0], "history") == 0) {
+            printHistory(history);
+            continue;
+        } else if (strcmp(arguments[0], "exit") == 0) {
+            freeHistory(history);
+            exit(0);
+        }
+        // Execute the command
+        executeCommand(arguments);
+        int i;
+        for (i = 0; arguments[i] != NULL; i++) {
+            free(arguments[i]);
+        }
     }
-
-
+    freeHistory(history);
     return 0;
 }
 
