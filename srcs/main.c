@@ -1,21 +1,17 @@
 #include "mysh.h"
 
 int main() {
-    char input[MAX_INPUT_LENGTH];
+    const char* input = "ls -l > output.txt | grep foo $HOME";
 
-    while (1) {
-        printf("Enter a command (type 'exit' to quit): ");
-        fgets(input, sizeof(input), stdin);
+    char* arguments[MAX_ARGUMENTS];
+    splitInput(input, arguments);
 
-        // Remove trailing newline character
-        input[strcspn(input, "\n")] = '\0';
-
-        if (strcmp(input, "exit") == 0) {
-            break;
-        }
-
-        executeCommand(input);
+    int i;
+    for (i = 0; arguments[i] != NULL; i++) {
+        printf("Argument %d: %s\n", i, arguments[i]);
+        free(arguments[i]);
     }
 
     return 0;
 }
+

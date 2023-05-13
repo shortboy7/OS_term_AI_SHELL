@@ -11,4 +11,6 @@
 #define MAX_INPUT_LENGTH 10000
 #define MAX_ARGUMENTS 1000
 
+void splitInput(const char* input, char** arguments);
+
 #endif
