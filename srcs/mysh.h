@@ -8,5 +8,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#define MAX_COMMANDS 100
+#define COMMAND_LENGTH 100
 
 #endif
