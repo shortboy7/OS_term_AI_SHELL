@@ -15,15 +15,12 @@ void printCommandHistory(const char commandHistory[MAX_COMMANDS][COMMAND_LENGTH]
 
 
 void enableRawMode() {
-    struct termios raw;
-    tcgetattr(STDIN_FILENO, &raw);
-    raw.c_lflag &= ~(ECHO | ICANON);
-    tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+     initscr();
+    raw();
+    keypad(stdscr, TRUE);
+    noecho();
 }
 
 void disableRawMode() {
-    struct termios raw;
-    tcgetattr(STDIN_FILENO, &raw);
-    raw.c_lflag |= (ECHO | ICANON);
-    tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+   endwin();
 }

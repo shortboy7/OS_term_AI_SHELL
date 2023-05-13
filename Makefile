@@ -14,7 +14,7 @@ OBJS = $(patsubst $(SRCS_DIR)/%,$(OBJS_DIR)/%,$(SRCS:%.c=%.o))
 all: $(NAME)
 
 $(NAME) : $(OBJS_DIR) $(OBJS)
-	$(CC) $(CLFLAG) $(OBJS) -o $@
+	$(CC)  $(OBJS) -o $@ $(CLFLAG)
 
 $(OBJS_DIR):
 	mkdir $(OBJS_DIR)
