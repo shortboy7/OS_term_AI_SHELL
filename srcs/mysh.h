@@ -15,4 +15,10 @@
 #define MAX_COMMANDS 100
 #define COMMAND_LENGTH 100
 
+void addCommandToHistory(char commandHistory[MAX_COMMANDS][COMMAND_LENGTH], const char* command, int* historyCount);
+void printCommandHistory(const char commandHistory[MAX_COMMANDS][COMMAND_LENGTH], int historyCount);
+void enableRawMode();
+void disableRawMode();
+
+
 #endif
