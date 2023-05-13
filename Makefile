@@ -1,5 +1,6 @@
 NAME=mysh
 CC=gcc
+CLFLAG= -lncurses
 RM=rm -rf
 
 #Directory
@@ -13,13 +14,13 @@ OBJS = $(patsubst $(SRCS_DIR)/%,$(OBJS_DIR)/%,$(SRCS:%.c=%.o))
 all: $(NAME)
 
 $(NAME) : $(OBJS_DIR) $(OBJS)
-	$(CC) $(OBJS) -o $@
+	$(CC) $(CLFLAG) $(OBJS) -o $@
 
 $(OBJS_DIR):
 	mkdir $(OBJS_DIR)
 
 $(OBJS_DIR)/%.o : $(SRCS_DIR)/%.c
-	$(CC)  -o $@ -c $<
+	$(CC) -o $@ -c $< $(CLFLAG)
 
 clean:
 	$(RM) $(OBJS)

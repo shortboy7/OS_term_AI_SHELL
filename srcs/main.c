@@ -13,10 +13,28 @@ void printCommandHistory(const char commandHistory[MAX_COMMANDS][COMMAND_LENGTH]
     }
 }
 
+
+void enableRawMode() {
+    struct termios raw;
+    tcgetattr(STDIN_FILENO, &raw);
+    raw.c_lflag &= ~(ECHO | ICANON);
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+}
+
+void disableRawMode() {
+    struct termios raw;
+    tcgetattr(STDIN_FILENO, &raw);
+    raw.c_lflag |= (ECHO | ICANON);
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+}
+
 int main() {
     char command[COMMAND_LENGTH];
     char commandHistory[MAX_COMMANDS][COMMAND_LENGTH];
     int historyCount = 0;
+    int historyIndex = 0;
+
+    enableRawMode();
 
     while (1) {
         printf("Enter a command (type 'history' to view command history): ");
@@ -57,6 +75,8 @@ int main() {
             }
         }
     }
+
+    disableRawMode();
 
     return 0;
 }

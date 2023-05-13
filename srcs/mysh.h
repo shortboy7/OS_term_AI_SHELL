@@ -8,6 +8,10 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#include <termios.h>
+#include <ncurses.h>
+
+
 #define MAX_COMMANDS 100
 #define COMMAND_LENGTH 100
 
