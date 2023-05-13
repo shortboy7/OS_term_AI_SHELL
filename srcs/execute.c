@@ -44,20 +44,21 @@ void executeCommand(char** arguments) {
         } else if (pids[i] == 0) {
             // Child process
 
+            // 자식 : read fd0 <- 부모 : write fd1
             // Redirect input
             if (i > 0) {
-                dup2(pipefd[i - 1][0], STDIN_FILENO);
-                // close(pipefd[i - 1][0]);
-                // close(pipefd[i - 1][1]);
+
+                dup2(pipefd[i - 1][0], STDIN_FILENO); // pipefd[i - 1][0](입력) 이 보고 있는 것을 STDIN_FILENO으로 복사
+                close(pipefd[i - 1][0]);
+                close(pipefd[i - 1][1]);
             }
 
             // Redirect output
             if (i < numCommands - 1) {
                 dup2(pipefd[i][1], STDOUT_FILENO);
-                // close(pipefd[i][0]);
-                // close(pipefd[i][1]);
+                close(pipefd[i][0]);
+                close(pipefd[i][1]);
             }
-
 
 			// Gather arguments for the command to be executed
             char* commandArguments[MAX_ARGUMENTS];
@@ -122,7 +123,21 @@ void executeCommand(char** arguments) {
             // execvp returns only if an error occurred
             perror("Command execution failed");
             exit(EXIT_FAILURE);
-
+        }else {
+            // Parent process
+            int status;
+            if (i > 0) {
+                close(pipefd[i - 1][0]);
+                close(pipefd[i - 1][1]);
+            }
+            waitpid(pids[i], &status, 0);
+             if (WIFEXITED(status)) {
+                ("Command exited with status: %d\n", WEXITSTATUS(status));
+            } else if (WIFSIGNALED(status)) {
+                printf("Command terminated");
+            } else if (WIFSIGNALED(status)) {
+                printf("Command terminated by signal: %d\n", WTERMSIG(status));
+    	    }
         }
     }
 
@@ -132,17 +147,17 @@ void executeCommand(char** arguments) {
         close(pipefd[i][1]);
     }
 
-    // Wait for all child processes to finish
-    for (i = 0; i < numCommands; i++) {
-        int status;
-        waitpid(pids[i], &status, 0);
+    // // Wait for all child processes to finish
+    // for (i = 0; i < numCommands; i++) {
+    //     int status;
+    //     waitpid(pids[i], &status, 0);
 
-        if (WIFEXITED(status)) {
-            printf("Command exited with status: %d\n", WEXITSTATUS(status));
-        } else if (WIFSIGNALED(status)) {
-            printf("Command terminated");
-		} else if (WIFSIGNALED(status)) {
-        	printf("Command terminated by signal: %d\n", WTERMSIG(status));
-    	}
-	}
+    //     if (WIFEXITED(status)) {
+    //         printf("Command exited with status: %d\n", WEXITSTATUS(status));
+    //     } else if (WIFSIGNALED(status)) {
+    //         printf("Command terminated");
+	// 	} else if (WIFSIGNALED(status)) {
+    //     	printf("Command terminated by signal: %d\n", WTERMSIG(status));
+    // 	}
+	// }
 }
