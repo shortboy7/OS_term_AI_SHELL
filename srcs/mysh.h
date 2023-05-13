@@ -20,5 +20,6 @@ void printCommandHistory(const char commandHistory[MAX_COMMANDS][COMMAND_LENGTH]
 void enableRawMode();
 void disableRawMode();
 
+int executeCommand(const char * command);
 
 #endif

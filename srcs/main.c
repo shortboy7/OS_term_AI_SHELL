@@ -30,31 +30,8 @@ int main() {
             addCommandToHistory(commandHistory, command, &historyCount);
             historyIndex = historyCount;
 
-            // Fork a child process
-            pid_t pid = fork();
-
-            if (pid < 0) {
-                perror("Fork failed");
-                exit(EXIT_FAILURE);
-            } else if (pid == 0) {
-                // Child process
-                execlp(command, command, NULL);
-
-                // execlp returns only if an error occurred
-                perror("Command execution failed");
-                exit(EXIT_FAILURE);
-            } else {
-                // Parent process
-                int status;
-                waitpid(pid, &status, 0);
-
-                if (WIFEXITED(status)) {
-                    printf("Command exited with status: %d\n", WEXITSTATUS(status));
-                } else if (WIFSIGNALED(status)) {
-                    printf("Command terminated by signal: %d\n", WTERMSIG(status));
-                }
-            }
-
+            executeCommand(command);
+            command[0] = '\0';  // Reset command
             commandLength = 0;
         } else if (c == 127 || c == 8) {  // Handle backspace/delete
             if (commandLength > 0) {
