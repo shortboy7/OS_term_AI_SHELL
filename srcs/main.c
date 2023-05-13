@@ -38,15 +38,31 @@ int main() {
 
     while (1) {
         printf("Enter a command (type 'history' to view command history): ");
-        fgets(command, sizeof(command), stdin);
 
-        // Remove the newline character at the end of the command
-        command[strcspn(command, "\n")] = 0;
+        int index = 0;
+        char c;
+
+        while ((c = getchar()) != '\n') {
+            if (c == 127 || c == 8) {  // Handle backspace/delete
+                if (index > 0) {
+                    putchar('\b');
+                    putchar(' ');
+                    putchar('\b');
+                    index--;
+                }
+            } else {
+                command[index++] = c;
+                putchar(c);
+            }
+        }
+        command[index] = '\0';
 
         if (strcmp(command, "history") == 0) {
             printCommandHistory(commandHistory, historyCount);
             continue;
         }
+
+        printf("\n");
 
         addCommandToHistory(commandHistory, command, &historyCount);
 
