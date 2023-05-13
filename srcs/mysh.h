@@ -11,4 +11,5 @@
 #define MAX_INPUT_LENGTH 10000
 #define MAX_ARGUMENTS 1000
 
+void executeCommand(const char* command);
 #endif
