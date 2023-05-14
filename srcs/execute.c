@@ -1,16 +1,5 @@
 #include "mysh.h"
 
-void setEnvironmentVariable(const char* variable, const char* value) {
-    if (variable == NULL || value == NULL) {
-        printf("Invalid arguments for export command.\n");
-        return;
-    }
-
-    if (setenv(variable, value, 1) != 0) {
-        printf("Failed to set environment variable.\n");
-    }
-}
-
 void changeDirectory(char** arguments) {
     if (arguments[1] == NULL) {
         // No directory provided, go to home directory

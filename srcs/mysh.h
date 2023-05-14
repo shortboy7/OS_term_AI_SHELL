@@ -24,7 +24,6 @@ void splitInput(const char* input, char** arguments, Node* history);
 void executeCommand(char** arguments);
 
 void changeDirectory(char** arguments);
-void setEnvironmentVariable(const char* variable, const char* value);
 
 Node *addToHistory(Node *head, char *command);
 void printHistory(Node *head);
