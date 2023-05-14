@@ -19,7 +19,7 @@ typedef struct node {
     struct node *next;
 } Node;
 
-void splitInput(const char* input, char** arguments);
+void splitInput(const char* input, char** arguments, Node* history);
 void executeCommand(char** arguments);
 
 void changeDirectory(char** arguments);
