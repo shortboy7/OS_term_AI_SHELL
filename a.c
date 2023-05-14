@@ -1,73 +1,81 @@
-#include "srcs/mysh.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <dirent.h>
 
-void splitInput(const char* input, char** arguments) {
-    char* token;
-    char* rest = strdup(input);
-    int argIndex = 0;
+#define MAX_INPUT_LENGTH 1000
+#define MAX_ARGUMENTS 10
 
-    while ((token = strtok_r(rest, " \t\n", &rest))) {
-        // Check for redirection operators
-        if (strcmp(token, ">") == 0 || strcmp(token, "<") == 0) {
-            arguments[argIndex] = strdup(token);
-            argIndex++;
-        }
-        // Check for pipe operator
-        else if (strcmp(token, "|") == 0) {
-            arguments[argIndex] = strdup(token);
-            argIndex++;
-        }
-        // Check for environment variables
-        else if (token[0] == '$') {
-            // Extract the environment variable value
-            char* envVar;
-            if (token[1] == '\0') {
-                // Special case: '$' alone is treated as a regular argument
-                arguments[argIndex] = strdup(token);
-                argIndex++;
-            } else {
-                if (token[1] == '{' && token[strlen(token) - 1] == '}') {
-                    // Handle "${ENV_VAR}" syntax
-                    char envName[strlen(token) - 2];
-                    strncpy(envName, token + 2, strlen(token) - 3);
-                    envName[strlen(token) - 3] = '\0';
-                    envVar = getenv(envName);
-                } else {
-                    // Handle "$ENV_VAR" syntax
-                    envVar = getenv(token + 1);
-                }
+char* autocomplete(const char* partial) {
+    char* result = NULL;
+    DIR* dir;
+    struct dirent* entry;
 
-                if (envVar != NULL) {
-                    arguments[argIndex] = strdup(envVar);
-                    argIndex++;
-                }
-            }
-        }
-        // Treat as a regular argument
-        else {
-            arguments[argIndex] = strdup(token);
-            argIndex++;
-        }
-
-        // Check if the argument limit has been reached
-        if (argIndex >= MAX_ARGUMENTS - 1)
-            break;
+    dir = opendir(".");
+    if (dir == NULL) {
+        perror("opendir");
+        return NULL;
     }
 
-    arguments[argIndex] = NULL;  // Null-terminate the argument list
+    while ((entry = readdir(dir)) != NULL) {
+        if (strncmp(entry->d_name, partial, strlen(partial)) == 0) {
+            result = strdup(entry->d_name);
+            break;
+        }
+    }
 
-    free(rest);
+    closedir(dir);
+    return result;
+}
+
+void handleTabAutocomplete(char* input) {
+    char* lastToken = NULL;
+    char* autocompleteResult = NULL;
+
+    // Find the last token in the input
+    char* token = strtok(input, " ");
+    while (token != NULL) {
+        lastToken = token;
+        token = strtok(NULL, " ");
+    }
+
+    if (lastToken != NULL) {
+        // Perform tab autocomplete on the last token
+        autocompleteResult = autocomplete(lastToken);
+        if (autocompleteResult != NULL) {
+            // Append the autocomplete result to the input
+            size_t inputLength = strlen(input);
+            size_t autocompleteLength = strlen(autocompleteResult);
+            size_t newLength = inputLength + autocompleteLength + 1; // +1 for the space
+            if (newLength < MAX_INPUT_LENGTH) {
+                strncat(input, " ", MAX_INPUT_LENGTH - inputLength - 1);
+                strncat(input, autocompleteResult, MAX_INPUT_LENGTH - inputLength - 1);
+            }
+        }
+    }
+
+    free(autocompleteResult);
 }
 
 int main() {
-    const char* input = "ls -l>output.txt | grep foo $HOME";
+    char input[MAX_INPUT_LENGTH];
 
-    char* arguments[MAX_ARGUMENTS];
-    splitInput(input, arguments);
+    while (1) {
+        printf("mysh$ ");
+        fgets(input, sizeof(input), stdin);
 
-    int i;
-    for (i = 0; arguments[i] != NULL; i++) {
-        printf("Argument %d: %s\n", i, arguments[i]);
-        free(arguments[i]);
+        if (input[0] == '\n') {
+            continue;
+        }
+
+        // Remove newline character from input
+        input[strcspn(input, "\n")] = '\0';
+
+        // Handle tab autocomplete
+        handleTabAutocomplete(input);
+
+        // Print the modified input
+        printf("Modified input: %s\n", input);
     }
 
     return 0;

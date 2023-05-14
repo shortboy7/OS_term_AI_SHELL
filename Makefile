@@ -13,13 +13,13 @@ OBJS = $(patsubst $(SRCS_DIR)/%,$(OBJS_DIR)/%,$(SRCS:%.c=%.o))
 all: $(NAME)
 
 $(NAME) : $(OBJS_DIR) $(OBJS)
-	$(CC) $(OBJS) -o $@
+	$(CC) $(OBJS) -o $@ -lreadline
 
 $(OBJS_DIR):
 	mkdir $(OBJS_DIR)
 
 $(OBJS_DIR)/%.o : $(SRCS_DIR)/%.c
-	$(CC)  -o $@ -c $<
+	$(CC)  -o $@ -c $< -lreadline
 
 clean:
 	$(RM) $(OBJS)

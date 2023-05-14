@@ -9,6 +9,7 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <string.h>
+#include <readline/readline.h>
 
 
 #define MAX_INPUT_LENGTH 10000
